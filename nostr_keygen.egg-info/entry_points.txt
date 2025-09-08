@@ -1,0 +1,2 @@
+[console_scripts]
+nostr-keygen = main:main

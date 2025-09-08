@@ -10,3 +10,6 @@ authors = [{name = "Your Name", email = "you@example.com"}]
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = ["ecdsa", "bech32"]
+
+[project.scripts]
+nostr-keygen = "main:main"

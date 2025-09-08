@@ -1,0 +1,9 @@
+README.md
+main.py
+pyproject.toml
+nostr_keygen.egg-info/PKG-INFO
+nostr_keygen.egg-info/SOURCES.txt
+nostr_keygen.egg-info/dependency_links.txt
+nostr_keygen.egg-info/entry_points.txt
+nostr_keygen.egg-info/requires.txt
+nostr_keygen.egg-info/top_level.txt
