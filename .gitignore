@@ -1,4 +1,4 @@
-nostr_keygen.egg-info
+nostr_keygen.egg-info/
 __pycache__/
 venv/
 *.pyc
