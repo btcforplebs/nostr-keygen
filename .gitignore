@@ -1,3 +1,5 @@
+
+build/
 nostr_keygen.egg-info/
 __pycache__/
 venv/
