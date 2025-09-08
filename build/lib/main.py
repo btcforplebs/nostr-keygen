@@ -71,8 +71,8 @@ def main():
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
-    print("NSEc:", nsec)
-    print("NPop:", npub)
+    print("NSec:", nsec)
+    print("NPub:", npub)
 
 
 if __name__ == "__main__":
