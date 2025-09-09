@@ -90,23 +90,6 @@ Both forms install the console‑script `nostr‑keygen` into `./.venv/bin`.
 > Keep your `nsec` secret in a secure, offline location. Anyone with that string can sign Nostr events or spend Nostr‑based funds.
 
 
-## 🔧 How the code works (quick dive)
-
-```python
-# main.py
-import argparse, hashlib
-from ecdsa import SigningKey, SECP256k1
-from bech32 import bech32_encode, convertbits
-
-NSEC_PREFIX, NPUB_PREFIX = "nsec", "npub"
-
-def _to_bech32(data: bytes, hrp: str) -> str:
-    five_bits = convertbits(list(data), 8, 5, True)
-    return bech32_encode(hrp, five_bits)
-
-# … (rest unchanged) …
-```
-
 ### Why the key‑gen algorithm matters
 
 1. **Read file in binary** – We need raw entropy; reading as text would truncate or encode the file in an unexpected way. Binary mode is the most faithful representation of the file’s content.
