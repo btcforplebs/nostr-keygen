@@ -39,10 +39,7 @@ Run the script directly from the project directory:
 ```bash
 ./nostr-keygen
 ```
-or, if you added the symlink:
-```bash
-nostr-keygen
-```
+
 You’ll be guided through the following steps:
 
 1. Welcome screen – press **Enter** to continue.
