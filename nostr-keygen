@@ -1,0 +1,149 @@
+#!/usr/bin/env python3
+"""A friendly CLI that walks you through generating a Nostr key pair
+   from a file you pick on the fly.
+
+   Run it with:
+       ./nostr-keygen
+"""
+
+import time
+import argparse
+import hashlib
+import os
+import sys
+from pathlib import Path
+
+# ----- IMPORTS ---------------------------------------------------------------
+try:
+    from ecdsa import SigningKey, SECP256k1
+    from bech32 import bech32_encode, convertbits
+except ImportError as e:
+    print("⚠️  Required packages are missing.\nRun 'pip install ecdsa bech32' first.", file=sys.stderr)
+    sys.exit(1)
+
+# ----- CONSTANTS -------------------------------------------------------------
+NSEC_PREFIX = "nsec"
+NPUB_PREFIX = "npub"
+
+# ----- HELPER FUNCTIONS ------------------------------------------------------
+def _to_bech32(data: bytes, hrp: str) -> str:
+    """Encode raw bytes into a Bech32 string with the given human‑readable part."""
+    five_bits = convertbits(list(data), 8, 5, True)
+    if five_bits is None:
+        raise ValueError("Error converting data to 5‑bit groups")
+    return bech32_encode(hrp, five_bits)
+
+def _entropy_to_pri_key(entropy: bytes) -> SigningKey:
+    """Return a SECP256k1 private key derived from SHA‑256 of the entropy."""
+    seed = hashlib.sha256(entropy).digest()
+    return SigningKey.from_string(seed, curve=SECP256k1)
+
+def generate_key_from_file(file_path: Path):
+    """Return (nsec, npub, private_hex, public_hex)."""
+    if not file_path.is_file():
+        raise FileNotFoundError(f"File not found: {file_path}")
+
+    with file_path.open("rb") as f:
+        data = f.read()
+
+    sk = _entropy_to_pri_key(data)
+    vk = sk.get_verifying_key()
+
+    private_bytes = sk.to_string()
+    public_bytes  = vk.to_string("compressed")
+
+    nsec = _to_bech32(private_bytes, NSEC_PREFIX)
+    npub = _to_bech32(public_bytes, NPUB_PREFIX)
+
+    return nsec, npub, private_bytes.hex(), public_bytes.hex()
+
+# ----- CLI / UI ---------------------------------------------------------------
+def welcome():
+    clear_terminal()
+    print("\n" + "="*30)
+    print("🛠️  Welcome to Nostr‑KeyGen")
+    print("="*30 + "\n")
+
+
+def info():
+    clear_terminal()
+    print("This tool will help you:")
+    print("- Pick any file as your entropy source")
+    print("- Hash the file → 32‑byte seed")
+    print("- Derive a secp256k1 key pair")
+    print("- Print the Nostr `nsec`/`npub` and the raw hex values")
+    print()
+
+def demo():
+    clear_terminal()
+    print("💡 EXAMPLE (using a random file in /tmp)...")
+    example = Path("/tmp/nostr_demo_entropy.txt")
+    example.write_bytes(os.urandom(256))
+    try:
+        nsec, npub, priv_hex, pub_hex = generate_key_from_file(example)
+        print(f"  DEMO nsec: {nsec}")
+        print(f"  DEMO npub: {npub}")
+        print(f"  DEMO priv hex: {priv_hex}")
+        print(f"  DEMO pub hex: {pub_hex}")
+    except Exception as e:
+        print(f"  Cannot generate demo key: {e}")
+    finally:
+        example.unlink(missing_ok=True)
+    print()
+
+def ask_file() -> Path:
+    clear_terminal()
+    while True:
+        path = input("📂 Enter the path or drop your file: ").strip()
+        if not path:
+            print("  ✨ Nothing entered, try again.")
+            continue
+        p = Path(path).expanduser().resolve()
+        if p.is_file():
+            return p
+        print("  ❌ That path isn’t a file. Try again.")
+
+def show_keys(nsec, npub, priv_hex, pub_hex):
+    clear_terminal()
+    print("\n✅  Your new key pair:")
+    print(f"    - nsec : {nsec}")
+    print(f"    - npub : {npub}")
+    print(f"    - priv hex : {priv_hex}")
+    print(f"    - pub hex  : {pub_hex}\n")
+
+def clear_terminal():
+    """Clear the screen for a clean exit."""
+    os.system("clear" if os.name != "nt" else "cls")
+
+def pause(prompt="[Enter] to continue"):
+    """Wait for the user to hit Enter."""
+    input(f"\n{prompt}")
+
+def main():
+    welcome()
+    pause("Press [Enter] to continue...")
+
+    info()
+    pause("Press [Enter] to continue...")
+
+    demo()
+    pause("Press [Enter] to continue...")
+
+    entropy_file = ask_file()
+
+    try:
+        nsec, npub, priv_hex, pub_hex = generate_key_from_file(entropy_file)
+    except Exception as e:
+        print(f"\n❌  Failed to generate keys: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    show_keys(nsec, npub, priv_hex, pub_hex)
+    pause("Press [Enter] to clear the screen and exit...")
+
+    clear_terminal()
+    print("🚀 Done. Goodbye!\n")
+    sys.exit(0)
+
+if __name__ == "__main__":
+    # If the script is run directly, invoke main()
+    main()
