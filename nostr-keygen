@@ -18,7 +18,7 @@ try:
     from ecdsa import SigningKey, SECP256k1
     from bech32 import bech32_encode, convertbits
 except ImportError as e:
-    print("⚠️  Required packages are missing.\nRun 'pip install ecdsa bech32' first.", file=sys.stderr)
+    print("⚠️  Required packages are missing.\nRun 'python3 -m venv venv && source venv/bin/activate && pip install ecdsa bech32' first.", file=sys.stderr)
     sys.exit(1)
 
 # ----- CONSTANTS -------------------------------------------------------------
@@ -104,7 +104,6 @@ def ask_file() -> Path:
         print("  ❌ That path isn’t a file. Try again.")
 
 def show_keys(nsec, npub, priv_hex, pub_hex):
-    clear_terminal()
     print("\n✅  Your new key pair:")
     print(f"    - nsec : {nsec}")
     print(f"    - npub : {npub}")
@@ -112,7 +111,7 @@ def show_keys(nsec, npub, priv_hex, pub_hex):
     print(f"    - pub hex  : {pub_hex}\n")
 
 def clear_terminal():
-    """Clear the screen for a clean exit."""
+    """Clear the screen for a safe exit."""
     os.system("clear" if os.name != "nt" else "cls")
 
 def pause(prompt="[Enter] to continue"):
